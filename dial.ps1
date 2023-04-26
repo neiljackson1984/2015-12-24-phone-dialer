@@ -75,7 +75,8 @@ if($registerHandlers){
 }
 # Write-Host "regsiterHAndlers is $registerHandlers"
 #discard non-digits
-$sanitizedPhoneNumberToDial=$phoneNumberToDial -replace "\D",""
+
+$sanitizedPhoneNumberToDial=$phoneNumberToDial -replace "[^0123456789#\*,]",""
 
 Write-Output ("phoneNumberToDial: $phoneNumberToDial")
 Write-Output ("sanitizedPhoneNumberToDial: $sanitizedPhoneNumberToDial")
@@ -88,11 +89,95 @@ $port.ReadExisting() | Out-Null
 $port.DtrEnable=$true
 
 $commands = @(
-    "E1", #turn on echo (mostly for debugging
-    "X0", #disable dial tone detection
-    "&D0", #tell the modem to ignore dtr (I suspect that the serial port's dtr line tends to go low when we disconnect.  If the modem were attending to dtr, the modem's default behavior is to hang up the call when dtr goes low.  we want the modem to stay off hook (and we will rely on the lack of carrier detection to cause the modem to decide to hang up of its own accord.
-    "S7=3", #wait-time for carrier after dial before hanging up (Seconds).
-    ("DT" + $sanitizedPhoneNumberToDial)
+    # turn on echo (mostly for debugging)
+    "E1"
+
+    #disable dial tone detection
+    "X0"
+
+    #tell the modem to ignore dtr (I suspect that the serial port's dtr line
+    #tends to go low when we disconnect.  If the modem were attending to dtr,
+    #the modem's default behavior is to hang up the call when dtr goes low.  we
+    #want the modem to stay off hook (and we will rely on the lack of carrier
+    #detection to cause the modem to decide to hang up of its own accord.
+    "&D0"
+
+    #wait-time for carrier after dial before hanging up (Seconds).
+    "S7=3" 
+
+    # specify the duration of the pause, in seconds, that the modem will do while
+    # dialing when it encounters a comma (",") in the dialing string.
+    "S8=2"
+
+    "DT$($sanitizedPhoneNumberToDial)"
+
+
+    ## see section 3.2.3 of the Conexant "Commands for Host Precessed and Host-Controlled Modems Reference Manual" (Conexant document number 100498D, April 5, 2001)
+    ## for allowable characters in the dialing string:
+    ##
+    ##  Syntax
+    ##  D<modifier>
+    ##  Defined Values
+    ##  <modifier> The valid dial string parameters (modifiers) are described below.
+    ##  Punctuation characters may be used for clarity, with parentheses,
+    ##  hyphen, and spaces ignored.
+    ##  0-9 DTMF digits 0 to 9.
+    ##  A-D DTMF digits A, B, C, and D. Some countries may prohibit sending
+    ##  of these digits during dialing.
+    ##  L Re-dial last number: the modem will re-dial the last valid
+    ##  telephone number. The L must be immediately
+    ##  
+    ##  P Select pulse dialing: pulse dial the numbers that follow until a "T"
+    ##  is encountered. Affects current and subsequent dialing. Some
+    ##  countries prevent changing dialing modes after the first digit is
+    ##  dialed.
+    ##  T Select tone dialing: tone dial the numbers that follow until a "P" is
+    ##  encountered. Affects current and subsequent dialing. Some
+    ##  countries prevent changing dialing modes after the first digit is
+    ##  dialed.
+    ##  W Wait for dial tone: the modem will wait for dial tone before dialing
+    ##  the digits following "W". If dial tone is not detected within the
+    ##  time specified by S7 or S6, the modem will abort the rest of the
+    ##  sequence, return on-hook, and generate an error message.
+    ##  * The 'star' digit (tone dialing only).
+    ##  # The 'gate' digit (tone dialing only).
+    ##  +
+    ##  
+    ##  ! Flash: the modem will go on-hook for a time defined by the value
+    ##  of S29. Country requirements may limit the time imposed.
+    ##  @ Wait for silence: the modem will wait for at least 5 seconds of
+    ##  silence in the call progress frequency band before continuing with
+    ##  the next dial string parameter. If the modem does not detect these 5
+    ##  seconds of silence before the expiration of the call abort timer (S7),
+    ##  the modem will terminate the call attempt with a NO ANSWER
+    ##  message. If busy detection is enabled, the modem may terminate
+    ##  the call with the BUSY result code. If answer tone arrives during
+    ##  execution of this parameter, the modem will handshake.
+    ##  $ Wait for credit card dialing tone before continuing with the dial
+    ##  string. If the tone is not detected within the time specified by S7 or
+    ##  S6, the modem will abort the rest of the sequence, return on-hook,
+    ##  and generate an error message.
+    ##  & Wait for credit card dialing tone before continuing with the dial
+    ##  string. If the tone is not detected within the time specified by S7 or
+    ##  S6, the modem will abort the rest of the sequence, return on-hook,
+    ##  and generate an error message.
+    ##  , Dial pause: the modem will pause for a time specified by S8 before
+    ##  dialing the digits following ",".
+    ##  ; Return to command state. Added to the end of a dial string. This
+    ##  causes the modem to return to the command state after it processes
+    ##  the portion of the dial string preceding the ";". This allows the user
+    ##  to issue additional commands while remaining off-hook. The
+    ##  additional commands may be placed in the original command line
+    ##  following the ";" and/or may be entered on subsequent command
+    ##  lines. The modem will enter call progress only after an additional
+    ##  dial command is issued without the ";" terminator. Use "H" to
+    ##  abort the dial in progress, and go back on-hook.
+    ##  ^ Toggles calling tone enable/disable: applicable to current dial
+    ##  attempt only.
+    ##  ( ) Ignored: may be used to format the dial string.
+    ##  - Ignored: may be used to format the dial string.
+    ##  <space> Ignored: may be used to format the dial string.
+
 )
 $port.Write("`r")
 foreach($command in $commands){
