@@ -78,8 +78,8 @@ if($registerHandlers){
 
 $sanitizedPhoneNumberToDial=$phoneNumberToDial -replace "[^0123456789#\*,@]",""
 
-Write-Output ("phoneNumberToDial: $phoneNumberToDial")
-Write-Output ("sanitizedPhoneNumberToDial: $sanitizedPhoneNumberToDial")
+Write-Host ("phoneNumberToDial: $phoneNumberToDial")
+Write-Host ("sanitizedPhoneNumberToDial: $sanitizedPhoneNumberToDial")
 
 $port= new-Object System.IO.Ports.SerialPort $nameOfSerialPort, 9600,([System.IO.Ports.Parity] 'None' ),8,([System.IO.Ports.StopBits] 'One' )
 $port.Handshake = ( [System.IO.Ports.Handshake] 'RequestToSend')
