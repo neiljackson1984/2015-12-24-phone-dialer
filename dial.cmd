@@ -1,1 +1,3 @@
-"U:\2015-12-24_phone_dialing_toolchain\DialV4\Dial.exe" %*
+@echo off
+set directoryOfThisScript=%~dp0
+pwsh -c "%directoryOfThisScript%dial.ps1" %*
