@@ -21,7 +21,39 @@ if($registerHandlers){
     
     # $openCommand = "env `"$PSCommandPath`" -phoneNumberToDial `"%1`""
     $openCommand = "pwsh `"$PSCommandPath`" -phoneNumberToDial `"%1`""
-    
+    <#
+        2023-12-21-1552:
+
+        After uninstalling and reinstalling powershell made the registry values
+        at "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App
+        Paths\pwsh.exe" (which pointed to a preview version of powershell that
+        we had uninstalled) invalid, I noticed that the protocol handlers were
+        no longer working.  Evidently, when invoking "Shell\Open\Command"
+        commands, Windows does not consider the environment variable PATH, but
+        instead relies exclusively on an "App Path" registry key to locate the
+        executable.  In order to fix the non-working protocol handlers, I
+        updated the values of the registry key at
+        "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App
+        Paths\pwsh.exe" to point to the currently-installed version of pwsh.exe.  
+
+        This was not really a problem with the tel: and callto: protocol
+        handlers that are set up here.  Rather, it is a "problem" with Windows,
+        but still, is worth mentioning here.  We could have worked around this
+        problem by having the "Shell\Open\Command" coimmand contain a hardcoded
+        absolute path of the pwsh.exe executable file, but that would probably
+        be more likely to break in the future.   
+
+        I suspect that most of the time, the pwsh installer will correctly and
+        automatically update the registry values at
+        "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App
+        Paths\pwsh.exe".  I suspect that the weirdness I encountered in this
+        incident was due to some transient one-time problem that happened during
+        the process of uninstalling the preview version of pwsh and installing
+        the non-previw version of pwsh.
+
+    #>
+
+
     $nameOfThisApplication="neildial"
     
     $pathOfRegistryKeyForThisApplication = Join-Path "registry::HKEY_CURRENT_USER\SOFTWARE\" $nameOfThisApplication
