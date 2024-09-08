@@ -108,7 +108,7 @@ if($registerHandlers){
 # Write-Host "regsiterHAndlers is $registerHandlers"
 #discard non-digits
 
-$sanitizedPhoneNumberToDial=$phoneNumberToDial -replace "[^0123456789#\*,@]",""
+$sanitizedPhoneNumberToDial=$phoneNumberToDial -replace "[^0123456789#\*,@!]",""
 
 Write-Host ("phoneNumberToDial: $phoneNumberToDial")
 Write-Host ("sanitizedPhoneNumberToDial: $sanitizedPhoneNumberToDial")
