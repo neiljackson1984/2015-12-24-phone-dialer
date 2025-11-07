@@ -9,8 +9,7 @@ param (
     [Boolean] $registerHandlers
 )
 
-#specify the com port on which to talk to the modem:
-$nameOfSerialPort='COM5'
+
 
 if($registerHandlers){
     # thanks to https://itectec.com/superuser/cant-change-tel-protocol-handler-in-windows-10/
@@ -107,6 +106,12 @@ if($registerHandlers){
 }
 # Write-Host "regsiterHAndlers is $registerHandlers"
 #discard non-digits
+
+neil-utility1\dial $phoneNumberToDial 6>&1
+return
+
+#specify the com port on which to talk to the modem:
+$nameOfSerialPort='COM5'
 
 $sanitizedPhoneNumberToDial=$phoneNumberToDial -replace "[^0123456789#\*,@!;DTW]",""
 
