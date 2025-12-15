@@ -102,7 +102,7 @@ if($registerHandlers){
     }
     exit 0
 } else {
-    Write-Host "proceeding to dial.  "
+    Write-Host "proceeding to dial '$($phoneNumberToDial)'."
 }
 # Write-Host "regsiterHAndlers is $registerHandlers"
 #discard non-digits
